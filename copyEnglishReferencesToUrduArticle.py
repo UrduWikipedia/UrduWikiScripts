@@ -5,7 +5,7 @@ import mwparserfromhell as mwp
 from scripts import noreferences
 from scripts import reflinks
 
-# function not used to access key based on value
+# Function not used to access key based on value, can be safely removed
 def search(myDict, search1):
     for key, value in myDict.items():
         if search1 in value:
