@@ -2,6 +2,13 @@
 
 mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
     $(function() {
+
+        // جن صفحات پر درستی املا کا آپشن نظر آئے گا
+        if (mw.config.get('wgAction') !== 'view' || [0, 4, 12, 14, 100, 102, 118].indexOf(mw.config.get('wgNamespaceNumber')) === -1) {
+            return;
+        }
+
+        // صفحہ کھولنے کے لیے
         async function loadPage(title) {
             try {
                 const data = await new mw.Api().get({
@@ -14,10 +21,11 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
                 const pageId = Object.keys(data.query.pages)[0];
                 return data.query.pages[pageId].revisions[0]['*'];
             } catch (error) {
-                throw new Error('Error fetching page content: ' + error);
+                throw new Error('صفحہ کے مندرجات اخذ نہیں کیے جا سکے: ' + error);
             }
         }
 
+        // صفحہ کو محفوظ کرنے کے لیے
         async function savePage(title, newText) {
             try {
                 const data = await new mw.Api().post({
@@ -37,26 +45,42 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             }
         }
 
+        // مندرجات صفحہ کے ہر جز پر کام کرنے کے لیے
+        const processPart = (part, replacements) => {
+            replacements.forEach(([incorrect, correct]) => {
+                const regex = new RegExp(incorrect, 'g');
+                part = part.replace(regex, correct);
+            });
+            return part;
+        };
+
+        // سانچوں اور روابط کو اصلاح سے مستثنیٰ رکھنے کے لیے
+        const replaceOutside = function(text, replacements) {
+            const parts = text.split(/(\[\[[\s\S]*?\]\]|\{\{[\s\S]*?\}\})/); // ریجیکس براے سانچہ و روابط
+            for (let i = 0; i < parts.length; i++) {
+                // محض ان الفاظ کی اصلاح کی جائے جو ویکی ربط یا سانچوں سے خارج ہوں
+                if (!parts[i].startsWith('[[') && !parts[i].startsWith('{{')) {
+                    parts[i] = processPart(parts[i], replacements);
+                }
+            }
+            return parts.join('');
+        };
+
+        // اصل فنکشن
         async function imla(imlaWords) {
             try {
                 const pageTitle = mw.config.get('wgTitle');
                 let pageContent = await loadPage(pageTitle);
                 const originalContent = pageContent;
 
-                imlaWords.forEach(([incorrectWord, correctWord]) => {
-                    const regex = new RegExp(incorrectWord, 'g');
-                    pageContent = pageContent.replace(regex, correctWord);
-                });
+                pageContent = replaceOutside(pageContent, imlaWords);
 
                 const imlaCorrected = originalContent !== pageContent;
-
                 if (imlaCorrected) {
-                    // اصلاحات کو صفحہ میں محفوظ کیا جا رہا ہے
-                    await savePage(pageTitle, pageContent);
+                    await savePage(pageTitle, pageContent); // اصلاحات کو صفحہ میں محفوظ کیا جا رہا ہے
                     openDiffPage(pageTitle); // اصلاحات کے بعد فرق صفحہ کھولنے کے لیے
                 } else {
-                    // اگر اصلاح کی ضرورت نہ ہو تو
-                    mw.notify('اِس صفحہ میں اصلاح کی ضرورت محسوس نہیں ہوئی۔');
+                    mw.notify('اِس صفحہ میں اصلاح کی ضرورت محسوس نہیں ہوئی۔'); // اگر اصلاح کی ضرورت نہ ہو تو
                 }
             } catch (error) {
                 mw.notify(error.message);
@@ -79,16 +103,19 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
                 'ca-durusti-imla',
                 'پیش نظر صفحہ میں موجود املا کی غلطیوں کو خودکار طور پر درست کریں',
                 null,
-                '#ca-protect'
+                '#ca-reportuser'
             );
             portlet.addEventListener('click', function(event) {
                 event.preventDefault();
-                imla(imlaWords); // درستی املا کے فنکشن کو شروع کیا جا رہا ہے
+                imla(imlaWords);
             });
         }
+
         addPortletLink();
 
         // اغلاط کی فہرست
+
+        // تا دم تحریرجاوا اسکرپٹ میں ریجیکس کی ورڈ باؤنڈری کام نہیں کرتی، لہذا look behind اور look ahead کی مدد سے لفظوں کے حدود متعین کیے گئے ہیں۔ 
         const imlaWords = [
             [/(?<!\S)آبساز(?!\S)/, 'ہائیڈروجن'],
             [/(?<!\S)آٹوویکی(?!\S)/, 'آٹو ویکی'],
@@ -1010,6 +1037,12 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             [/(?<!\S)عبد(الغنی|النافع|النّافع|النور|النّور|الہادی|الھادی|البدیع|الوارث|الرشید|الصبور|المعز|المُعز|السّلام|الملک|الرحیم|الرّحیم|المطلب|المطّلب)(?!\S)/, 'عبد $1'],
             [/(?<!\S)سن\s+(پیدائش|وفات)(?!\S)/, 'سنہ $1'],
             [/(?<!\S)سنِ\s+(پیدائش|وفات)(?!\S)/, 'سنہ $1'],
+            [/(?<!\S)علیگڑھ(?!\S)/, 'علی گڑھ'],
+            [/(?<!\S)زریعے(?!\S)/, 'ذریعے'],
+            [/(?<!\S)گھوڑ\s*سواری(?!\S)/, 'گھڑ سواری'],
+            [/(?<!\S)مذھب(?!\S)/, 'مذہب'],
+            [/(?<!\S)ذبردست(?!\S)/, 'زبردست'],
+            [/(?<!\S)نتایج(?!\S)/, 'نتائج'],
             [/(?<!\S)کرکت(?!\S)/, 'کرکٹ']
         ];
     });
