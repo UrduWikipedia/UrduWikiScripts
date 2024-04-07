@@ -1,5 +1,15 @@
 // https://ur.wikipedia.org/wiki/میڈیاویکی:Gadget-durustiImla.js
 
+/*
+ * خودکار درستی املا 
+ * کاوشِ Yethrosh (2024ء)
+ *
+ * اردو ویکیپیڈیا کے مضامین میں املا و تحریر کی غلطیوں کی خودکار اصلاح کے لیے خصوصی طور پر تیار کردہ آلہ
+ * جس کی مدد سے ویکی صارفین ایک کلک پر مضامین کی اصلاح کر سکتے ہیں۔
+ *
+ * وپ:املا پڑتالگر کے تحت تیار شدہ
+ */
+
 mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
     $(function() {
 
@@ -25,7 +35,7 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             }
         }
 
-		// صفحہ محفوظ کرنے کے لیے
+        // صفحہ محفوظ کرنے کے لیے
         async function savePage(title, newText) {
             try {
                 const data = await new mw.Api().post({
@@ -45,6 +55,21 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             }
         }
 
+        // بعض الفاظ کے آخر میں دو زبر لگانے کے لیے
+        function addDoZabar(words, text) {
+            words.forEach(word => {
+                const DOZABAR = '\u064B';
+                const regex = new RegExp('(?<!\\S)' + word + '(?!\\S)(?!' + DOZABAR + ')', 'g');
+                text = text.replace(regex, word + DOZABAR);
+            });
+            return text;
+        }
+
+        // جن الفاظ کے آخر میں دو زبر لگانے ہیں
+        const doZabarWords = [
+            'اتفاقا', 'الزاما', 'لزوما', 'یقینا', 'قطعا', 'حتما', 'قاعدتا', 'طبیعتا', 'طبعا', 'حقیقتا', 'واقعا', 'واقعتا', 'تماما', 'کاملا', 'عینا', 'مطلقا', 'اصولا', 'اصلا', 'اصالتا', 'نسبا', 'نسبتا', 'تقریبا', 'معمولا', 'قانونا', 'شرعا', 'اخلاقا', 'خلقا', 'احتمالا', 'اساسا', 'اجماعا', 'غالبا', 'صریحا', 'صراحتا', 'عموما', 'اختصاصا', 'خصوصا', 'مجملا', 'اجمالا', 'اختصارا', 'مختصرا', 'ظاہرا', 'باطنا', 'فطرتا', 'عادتا', 'مستقلا', 'احتیاطا', 'سہوا', 'ارتجالا', 'سریعا', 'فورا', 'دائما', 'ضرورتا', 'دفعتا', 'تدریجا', 'عملا', 'فعلا', 'ضمنا', 'نتیجتا', 'اصطلاحا', 'رسما', 'ترجیحا', 'متفقا', 'مثلا', 'ایضا', 'متّفقا', 'متفقا', 'احتراما', 'ثانیا', 'ثالثا', 'رابعا', 'خامسا', 'سادسا', 'سابعا', 'ثامنا', 'تاسعا', 'عاشرا', 'خصوصا', 'نسبتا', 'مروَّتا', 'مروتا', 'مروّتا', 'کنایتا', 'ضرورتا', 'ارادتا', 'فطرتا', 'شکایتا', 'کلیتا', 'قدرتا', 'حقیقتا', 'حکایتا', 'طبیعتا', 'وقتا', 'فوقتا', 'شریعتا', 'طاقتا', 'اشارتا', 'مصلحتا', 'حقارتا', 'وراثتا', 'صراحتا', 'عقیدتا', 'وضاحتا', 'شرارتا', 'فورا', 'عموما', 'تقریبا', 'وقتا', 'فوقتا', 'اتفاقا'
+        ];
+
         // چند ضروری فارمیٹنگ کا نفاذ
         function formatText(text) {
             // قوسین سے قبل اسپیس
@@ -52,7 +77,7 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
                 .replace(/([^\s])(\[)/g, '$1 [')
                 .replace(/([^\s])(\{)/g, '$1 {');
 
-            // قوسین کے بعد اسپیس 
+            // قوسین کے بعد اسپیس  حذف
             text = text.replace(/(\(+)\s+/g, '$1')
                 .replace(/(\[+)\s+/g, '$1')
                 .replace(/(\{+)\s+/g, '$1')
@@ -68,6 +93,8 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             // وقفہ، ختمہ، ستارہ اور ہیش کی علامتوں کے بعد اسپیس
             text = text.replace(/(\,)(?=[^\s])/g, '$1 ')
                 .replace(/(\.)(?=[^\s])/g, '$1 ')
+                .replace(/(\۔)(?=[^\s])/g, '$1 ')
+                .replace(/(\،)(?=[^\s])/g, '$1 ')
                 .replace(/(\*)(?=[^\s])/g, '$1 ')
                 .replace(/(\#)(?=[^\s])/g, '$1 ');
 
@@ -107,6 +134,10 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
                 let pageContent = await loadPage(pageTitle);
                 const originalContent = pageContent;
 
+                // پہلے دو زبر لگائے جائیں
+                pageContent = addDoZabar(doZabarWords, pageContent);
+
+                // بعد ازاں صفحہ کے بقیہ مندرجات پر اصلاح کا عمل ہو
                 pageContent = replaceOutside(pageContent, imlaWords);
 
                 const imlaCorrected = originalContent !== pageContent;
