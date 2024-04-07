@@ -25,14 +25,14 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             }
         }
 
-        // صفحہ کو محفوظ کرنے کے لیے
+		// صفحہ محفوظ کرنے کے لیے
         async function savePage(title, newText) {
             try {
                 const data = await new mw.Api().post({
                     action: 'edit',
                     title: title,
                     text: newText,
-                    summary: 'درستی املا بذریعہ [[میڈیاویکی:Gadget-durustiImla.js|املا پڑتالگر]]',
+                    summary: 'درستی املا بذریعہ [[وپ:املا پڑتالگر|املا پڑتالگر]]',
                     token: mw.user.tokens.get('csrfToken')
                 });
                 if (data.error && data.error.info) {
@@ -45,12 +45,46 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             }
         }
 
+        // چند ضروری فارمیٹنگ کا نفاذ
+        function formatText(text) {
+            // قوسین سے قبل اسپیس
+            text = text.replace(/([^\s])(\()/g, '$1 (')
+                .replace(/([^\s])(\[)/g, '$1 [')
+                .replace(/([^\s])(\{)/g, '$1 {');
+
+            // قوسین کے بعد اسپیس 
+            text = text.replace(/(\(+)\s+/g, '$1')
+                .replace(/(\[+)\s+/g, '$1')
+                .replace(/(\{+)\s+/g, '$1')
+                .replace(/\s+(\)+)/g, '$1')
+                .replace(/\s+(\]+)/g, '$1')
+                .replace(/\s+(\}+)/g, '$1');
+
+            // مخصوص حالتوں میں قوسین کے بعد اسپیس
+            text = text.replace(/(\)+)(?=[^\s])/g, '$1 ')
+                .replace(/(\]+)(?=[^\s])/g, '$1 ')
+                .replace(/(\}+)(?=[^\s])/g, '$1 ');
+
+            // وقفہ، ختمہ، ستارہ اور ہیش کی علامتوں کے بعد اسپیس
+            text = text.replace(/(\,)(?=[^\s])/g, '$1 ')
+                .replace(/(\.)(?=[^\s])/g, '$1 ')
+                .replace(/(\*)(?=[^\s])/g, '$1 ')
+                .replace(/(\#)(?=[^\s])/g, '$1 ');
+
+            // وقفہ اور ختمہ سے پہلے موجود اسپیس حذف
+            text = text.replace(/\s+(\,)/g, '$1')
+                .replace(/\s+(\.)/g, '$1');
+
+            return text;
+        }
+
         // مندرجات صفحہ کے ہر جز پر کام کرنے کے لیے
         const processPart = (part, replacements) => {
             replacements.forEach(([incorrect, correct]) => {
                 const regex = new RegExp(incorrect, 'g');
                 part = part.replace(regex, correct);
             });
+            part = formatText(part); // چند ضروری فارمیٹنگ کے نفاذ کے فنکشن کے سنگ
             return part;
         };
 
@@ -69,7 +103,7 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
         // اصل فنکشن
         async function imla(imlaWords) {
             try {
-                const pageTitle = mw.config.get('wgTitle');
+                const pageTitle = mw.config.get('wgPageName');
                 let pageContent = await loadPage(pageTitle);
                 const originalContent = pageContent;
 
