@@ -72,35 +72,41 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
 
         // چند ضروری فارمیٹنگ کا نفاذ
         function formatText(text) {
-            // قوسین سے قبل اسپیس
-            text = text.replace(/([^\s])(\()/g, '$1 (')
-                .replace(/([^\s])(\[)/g, '$1 [')
-                .replace(/([^\s])(\{)/g, '$1 {');
+            // Add space before opening brackets if not preceded by space, <, >, [, ], {, }, or start of line
+            text = text.replace(/(?<!\s)(?<![<>\[\]\{\}])(?<!^)(\()/gm, ' $1')
+                .replace(/(?<!\s)(?<![<>\[\]\{\}])(?<!^)(\[)/gm, ' $1')
+                .replace(/(?<!\s)(?<![<>\[\]\{\}])(?<!^)(\{)/gm, ' $1');
 
-            // قوسین کے بعد اسپیس  حذف
+            // Remove space after opening brackets
             text = text.replace(/(\(+)\s+/g, '$1')
                 .replace(/(\[+)\s+/g, '$1')
-                .replace(/(\{+)\s+/g, '$1')
-                .replace(/\s+(\)+)/g, '$1')
-                .replace(/\s+(\]+)/g, '$1')
-                .replace(/\s+(\}+)/g, '$1');
+                .replace(/(\{+)\s+/g, '$1');
 
-            // مخصوص حالتوں میں قوسین کے بعد اسپیس
-            text = text.replace(/(\)+)(?=[^\s])/g, '$1 ')
-                .replace(/(\]+)(?=[^\s])/g, '$1 ')
-                .replace(/(\}+)(?=[^\s])/g, '$1 ');
+            // Remove space before closing brackets unless it starts from a new line
+            text = text.replace(/([^\S\r\n])+(\)+)/g, '$2')
+                .replace(/([^\S\r\n])+(\]+)/g, '$2')
+                .replace(/([^\S\r\n])+(\}+)/g, '$2');
 
-            // وقفہ، ختمہ، ستارہ اور ہیش کی علامتوں کے بعد اسپیس
-            text = text.replace(/(\,)(?=[^\s])/g, '$1 ')
-                .replace(/(\.)(?=[^\s])/g, '$1 ')
-                .replace(/(\۔)(?=[^\s])/g, '$1 ')
-                .replace(/(\،)(?=[^\s])/g, '$1 ')
-                .replace(/(\*)(?=[^\s])/g, '$1 ')
-                .replace(/(\#)(?=[^\s])/g, '$1 ');
+            // Add space after closing brackets in specific cases
+            text = text.replace(/(\)+)(?=[^\s\.,،۔<>\[\]\{\}])/g, '$1 ')
+                .replace(/(\]+)(?=[^\s\.,،۔<>\[\]\{\}])/g, '$1 ')
+                .replace(/(\}+)(?=[^\s\.,،۔<>\[\]\{\}])/g, '$1 ');
 
-            // وقفہ اور ختمہ سے پہلے موجود اسپیس حذف
-            text = text.replace(/\s+(\,)/g, '$1')
-                .replace(/\s+(\.)/g, '$1');
+            // Add space after period, comma, asterisk, and hash symbols if not followed by space
+            text = text.replace(/(\۔)(?![\s\[\]\{\}\(\)<>\'\"\%])/g, '$1 ')
+                .replace(/(\،)(?![\s\[\]\{\}\(\)<>\'\"\%])/g, '$1 ')
+                .replace(/(^|\n)(\*)(?=[^\s])/g, '$1$2 ')
+                .replace(/(^|\n)(\#)(?=[^\s])/g, '$1$2 ');
+
+            // Remove space before comma and period
+            text = text.replace(/\s+(\،)/g, '$1')
+                .replace(/\s+(\۔)/g, '$1');
+
+            // Remove spaces between ۔ or ، and <ref   
+            // Add a space after </ref> if not followed by space or newline
+            text = text.replace(/(\۔|\،)\s+(?=<ref)/g, '$1')
+                .replace(/(<\/ref>)(?![\s\n\[\]\{\}\(\)<>\'\"\%])/g, '$1 ');
+
 
             return text;
         }
