@@ -1,15 +1,5 @@
 // https://ur.wikipedia.org/wiki/میڈیاویکی:Gadget-durustiImla.js
 
-/*
- * خودکار درستی املا 
- * کاوشِ Yethrosh (2024ء)
- *
- * اردو ویکیپیڈیا کے مضامین میں املا و تحریر کی غلطیوں کی خودکار اصلاح کے لیے خصوصی طور پر تیار کردہ آلہ
- * جس کی مدد سے ویکی صارفین ایک کلک پر مضامین کی اصلاح کر سکتے ہیں۔
- *
- * وپ:املا پڑتالگر کے تحت تیار شدہ
- */
-
 mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
     $(function() {
 
@@ -67,7 +57,7 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
 
         // جن الفاظ کے آخر میں دو زبر لگانے ہیں
         const doZabarWords = [
-            'اتفاقا', 'الزاما', 'لزوما', 'یقینا', 'قطعا', 'حتما', 'قاعدتا', 'طبیعتا', 'طبعا', 'حقیقتا', 'واقعا', 'واقعتا', 'تماما', 'کاملا', 'عینا', 'مطلقا', 'اصولا', 'اصلا', 'اصالتا', 'نسبا', 'نسبتا', 'تقریبا', 'معمولا', 'قانونا', 'شرعا', 'اخلاقا', 'خلقا', 'احتمالا', 'اساسا', 'اجماعا', 'غالبا', 'صریحا', 'صراحتا', 'عموما', 'اختصاصا', 'خصوصا', 'مجملا', 'اجمالا', 'اختصارا', 'مختصرا', 'ظاہرا', 'باطنا', 'فطرتا', 'عادتا', 'مستقلا', 'احتیاطا', 'سہوا', 'ارتجالا', 'سریعا', 'فورا', 'دائما', 'ضرورتا', 'دفعتا', 'تدریجا', 'عملا', 'فعلا', 'ضمنا', 'نتیجتا', 'اصطلاحا', 'رسما', 'ترجیحا', 'متفقا', 'مثلا', 'ایضا', 'متّفقا', 'متفقا', 'احتراما', 'ثانیا', 'ثالثا', 'رابعا', 'خامسا', 'سادسا', 'سابعا', 'ثامنا', 'تاسعا', 'عاشرا', 'خصوصا', 'نسبتا', 'مروَّتا', 'مروتا', 'مروّتا', 'کنایتا', 'ضرورتا', 'ارادتا', 'فطرتا', 'شکایتا', 'کلیتا', 'قدرتا', 'حقیقتا', 'حکایتا', 'طبیعتا', 'وقتا', 'فوقتا', 'شریعتا', 'طاقتا', 'اشارتا', 'مصلحتا', 'حقارتا', 'وراثتا', 'صراحتا', 'عقیدتا', 'وضاحتا', 'شرارتا', 'فورا', 'عموما', 'تقریبا', 'وقتا', 'فوقتا', 'اتفاقا'
+            'اتفاقا', 'الزاما', 'لزوما', 'یقینا', 'قطعا', 'حتما', 'قاعدتا', 'طبعا', 'واقعا', 'واقعتا', 'تماما', 'کاملا', 'عینا', 'مطلقا', 'اصولا', 'اصلا', 'اصالتا', 'نسبا', 'نسبتا', 'تقریبا', 'معمولا', 'قانونا', 'شرعا', 'اخلاقا', 'خلقا', 'احتمالا', 'اساسا', 'اجماعا', 'غالبا', 'صریحا', 'صراحتا', 'اختصاصا', 'خصوصا', 'مجملا', 'اجمالا', 'اختصارا', 'مختصرا', 'ظاہرا', 'باطنا', 'فطرتا', 'عادتا', 'مستقلا', 'احتیاطا', 'سہوا', 'ارتجالا', 'سریعا', 'دائما', 'دفعتا', 'تدریجا', 'عملا', 'فعلا', 'ضمنا', 'نتیجتا', 'اصطلاحا', 'رسما', 'ترجیحا', 'متفقا', 'مثلا', 'ایضا', 'متّفقا', 'متفقا', 'احتراما', 'ثانیا', 'ثالثا', 'رابعا', 'خامسا', 'سادسا', 'سابعا', 'ثامنا', 'تاسعا', 'عاشرا', 'خصوصا', 'نسبتا', 'مروَّتا', 'مروتا', 'مروّتا', 'کنایتا', 'ضرورتا', 'ارادتا', 'شکایتا', 'کلیتا', 'قدرتا', 'حقیقتا', 'حکایتا', 'طبیعتا', 'شریعتا', 'طاقتا', 'اشارتا', 'مصلحتا', 'حقارتا', 'وراثتا', 'صراحتا', 'عقیدتا', 'وضاحتا', 'شرارتا', 'فورا', 'عموما', 'تقریبا', 'اہتماما', 'اضطرابا', 'عاریتا', 'رعایتا', 'قصدا', 'شکایتا', 'تفریحا', 'مذہبا', 'مزاجا', 'مزاحا', 'خالصتا', 'نسبا', 'اکراما', 'وضاحتا', 'تبرکا', 'مجبورا', 'جبرا', 'قطعا', 'تفریحا', 'طوعا', 'کرہا', 'عمدا', 'طنزا', 'تعظیما', 'تفصیلا', 'تکلفا', 'تکلّفا', 'تمثیلا', 'اہلا', 'سہلا', 'لازما', 'وقتا', 'فوقتا', 'اتفاقا'
         ];
 
         // چند ضروری فارمیٹنگ کا نفاذ
@@ -88,13 +78,13 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
                 .replace(/([^\S\r\n])+(\}+)/g, '$2');
 
             // Add space after closing brackets in specific cases
-            text = text.replace(/(\)+)(?=[^\s\.,،۔<>\[\]\{\}])/g, '$1 ')
-                .replace(/(\]+)(?=[^\s\.,،۔<>\[\]\{\}])/g, '$1 ')
-                .replace(/(\}+)(?=[^\s\.,،۔<>\[\]\{\}])/g, '$1 ');
+            text = text.replace(/(\)+)(?=[^\s\.,،؛۔<>\[\]\{\}])/g, '$1 ')
+                .replace(/(\]+)(?=[^\s\.,،؛۔<>\[\]\{\}])/g, '$1 ')
+                .replace(/(\}+)(?=[^\s\.,،؛۔<>\[\]\{\}])/g, '$1 ');
 
-            // Add space after period, comma, asterisk, and hash symbols if not followed by space
-            text = text.replace(/(\۔)(?![\s\[\]\{\}\(\)<>\'\"\%])/g, '$1 ')
-                .replace(/(\،)(?![\s\[\]\{\}\(\)<>\'\"\%])/g, '$1 ')
+            // Add space after period, comma, asterisk, and hash symbols if not followed by space and other symbols
+            text = text.replace(/(\۔)(?![\s\d\[\]\{\}\(\)<>»﴾\'\"\%])/g, '$1 ')
+                .replace(/(\،)(?![\s\d\[\]\{\}\(\)<>»﴾\'\"\%])/g, '$1 ')
                 .replace(/(^|\n)(\*)(?=[^\s])/g, '$1$2 ')
                 .replace(/(^|\n)(\#)(?=[^\s])/g, '$1$2 ');
 
@@ -107,7 +97,68 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             text = text.replace(/(\۔|\،)\s+(?=<ref)/g, '$1')
                 .replace(/(<\/ref>)(?![\s\n\[\]\{\}\(\)<>\'\"\%])/g, '$1 ');
 
+            return text;
+        }
 
+        // خانۂ معلومات کے سانچوں کے کلیدی الفاظ
+        const keywords = ['infobox', 'Infobox', 'Geobox', 'geobox', 'Japanese city', 'India Districts', 'خانہ معلومات', 'خانۂ معلومات'];
+
+        // خانۂ معلومات کی ترتیب و تنظیم کے لیے
+        function formatInfoboxContent(content) {
+            if (/^\|\s*[^|\s]/gm.test(content)) {
+                return content;
+            }
+            return content.replace(/\|(?![^[]*\]\])(?![^<]*>)/g, '\n|');
+        }
+
+        // خانۂ معلومات کو اخذ کرنے کے لیے
+        function extractTemplates(text, keywords) {
+            const templates = [];
+            let templateStart = -1;
+            let level = 0;
+            let inTemplate = false;
+
+            for (let i = 0; i < text.length; i++) {
+                if (text[i] === '{' && text[i + 1] === '{') {
+                    if (!inTemplate) {
+                        inTemplate = true;
+                        templateStart = i;
+                    }
+                    level++;
+                    i++;
+                } else if (text[i] === '}' && text[i + 1] === '}') {
+                    level--;
+                    if (level === 0 && inTemplate) {
+                        const templateEnd = i + 1;
+                        let templateText = text.substring(templateStart, templateEnd + 1);
+                        const keyword = templateText.substring(2).split('|')[0].trim();
+                        if (new RegExp(`^(${keywords.join('|')})`, 'i').test(keyword)) {
+                            // خانۂ معلومات کے مندرجات کی ترتیب کے لیے
+                            templateText = '{{' + formatInfoboxContent(templateText.slice(2, -2));
+                            if (templateText[templateText.length - 1] !== '\n') {
+                                templateText += '\n';
+                            }
+                            templateText += '}}';
+                            if (text.substring(templateEnd + 1).charAt(0) !== '\n') {
+                                templateText += '\n';
+                            }
+                            templates.push({
+                                original: text.substring(templateStart, templateEnd + 1),
+                                formatted: templateText
+                            });
+                        }
+                        inTemplate = false;
+                        templateStart = -1;
+                    }
+                    i++;
+                }
+            }
+            templates.forEach(({
+                original,
+                formatted
+            }) => {
+                text = text.replace(original, formatted);
+            });
             return text;
         }
 
@@ -134,11 +185,16 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
         };
 
         // اصل فنکشن
-        async function imla(imlaWords) {
+        async function imla(imlaWords, correctInfobox) {
             try {
                 const pageTitle = mw.config.get('wgPageName');
                 let pageContent = await loadPage(pageTitle);
                 const originalContent = pageContent;
+
+                // اگر خانۂ معلومات کی ترتیب مقصود ہو
+                if (correctInfobox) {
+                    pageContent = extractTemplates(pageContent, keywords);
+                }
 
                 // پہلے دو زبر لگائے جائیں
                 pageContent = addDoZabar(doZabarWords, pageContent);
@@ -166,6 +222,77 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             window.location.href = diffUrl;
         }
 
+        // ڈائیلاگ باکس کا فنکشن
+        function showCustomDialog() {
+            let modal = document.createElement('div');
+            modal.id = 'customModal';
+
+            let modalContent = document.createElement('div');
+            modalContent.id = 'customModalContent';
+            modalContent.className = 'clearfix';
+
+            let modalHeader = document.createElement('div');
+            modalHeader.id = 'customModalHeader';
+            let titleText = document.createTextNode('کیا آپ واقعی املا کی غلطیوں کو خودکار طور پر درست کرنا چاہتے ہیں؟');
+            modalHeader.appendChild(titleText);
+            modalContent.appendChild(modalHeader);
+
+            let checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = 'infoboxCheckbox';
+            let label = document.createElement('label');
+            label.htmlFor = 'infoboxCheckbox';
+            label.appendChild(document.createTextNode('اور ساتھ ہی خانۂ معلومات کی تنظیم و ترتیب بھی مقصود ہے؟'));
+            label.id = 'infoboxCheckboxText';
+            modalContent.appendChild(checkbox);
+            modalContent.appendChild(label);
+            let br = document.createElement('br');
+            br.id = 'lineBreakSpace';
+            modalContent.appendChild(br);
+
+            let listHeading = document.createTextNode('اگر آپ خانۂ معلومات کو مرتب کرنے کی غرض سے اس آپشن کو استعمال کر رہے ہیں تو درج ذیل ہدایات کو بغور ملاحظہ فرمائیں:');
+            modalContent.appendChild(listHeading);
+
+            let ul = document.createElement('ul');
+            ul.id = 'durustiList';
+
+            let li1 = document.createElement('li');
+            li1.textContent = 'اس آپشن کو اسی وقت استعمال کریں جب خانۂ معلومات کے تمام پیرامیٹر علاحدہ سطروں کی بجائے ایک ہی سطر میں درج ہوں اور خانۂ معلومات کی حالت ابتر ہو۔';
+            ul.appendChild(li1);
+
+            let li2 = document.createElement('li');
+            li2.textContent = 'اسے استعمال کرتے وقت یہ ملحوظ رکھیں کہ خانۂ معلومات میں موجود دوسرے سانچوں کی فارمیٹنگ میں بھی تبدیلی ہو جاتی ہے جس کی بنا پر بعض سانچے درست نظر نہیں آتے۔';
+            ul.appendChild(li2);
+
+            let li3 = document.createElement('li');
+            li3.textContent = 'اگر ایسا ہو تو اس آلہ سے ترمیم کے بعد آپ دوبارہ خانۂ ترمیم میں جا کر ان تبدیل شدہ سانچوں کے پیرامیٹر کو بدست خود درست کر دیں۔';
+            ul.appendChild(li3);
+
+            modalContent.appendChild(ul);
+
+            let closeButton = document.createElement('button');
+            closeButton.textContent = 'منسوخ کریں';
+            closeButton.className = 'closeButton';
+            closeButton.onclick = function() {
+                modal.style.display = 'none';
+                document.body.removeChild(modal);
+            };
+            modalContent.appendChild(closeButton);
+
+            let acceptButton = document.createElement('button');
+            acceptButton.textContent = 'جی ہاں';
+            acceptButton.className = 'acceptButton';
+            acceptButton.onclick = function() {
+                let checkboxValue = document.getElementById('infoboxCheckbox').checked;
+                imla(imlaWords, checkboxValue); // چیک باکس کے مطابق
+                modal.style.display = 'none';
+                document.body.removeChild(modal);
+            };
+            modalContent.appendChild(acceptButton);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+        }
+
         function addPortletLink() {
             const portlet = mw.util.addPortletLink(
                 'p-cactions',
@@ -178,10 +305,9 @@ mw.loader.using(['mediawiki.api', 'mediawiki.util', 'jquery'], function() {
             );
             portlet.addEventListener('click', function(event) {
                 event.preventDefault();
-                imla(imlaWords);
+                showCustomDialog();
             });
         }
-
         addPortletLink();
 
         // اغلاط کی فہرست
